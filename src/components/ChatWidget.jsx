@@ -43,16 +43,21 @@ const ChatWidget = () => {
         setIsLoading(true);
 
         try {
+
+            const payload = {
+                chatInput: userMsg,
+                sessionId: sessionIdRef.current
+            };
+
+            console.log('DEBUG: Sending to n8n:', payload);
+
             // Sending POST request to n8n webhook with SESSION ID
             const response = await fetch(WEBHOOK_URL, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({
-                    message: userMsg,
-                    sessionId: sessionIdRef.current
-                }),
+                body: JSON.stringify(payload),
             });
 
             if (!response.ok) throw new Error('Network response was not ok');
