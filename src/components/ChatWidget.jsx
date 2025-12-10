@@ -13,6 +13,19 @@ const ChatWidget = () => {
 
     const WEBHOOK_URL = "https://primary-xdh7-production.up.railway.app/webhook/2f9a874e-ab7c-44c0-9206-052d174c632f";
 
+    // Initialize Session ID
+    const getSessionId = () => {
+        let sessionId = localStorage.getItem('chatSessionId');
+        if (!sessionId) {
+            sessionId = 'session_' + Math.random().toString(36).substr(2, 9);
+            localStorage.setItem('chatSessionId', sessionId);
+        }
+        return sessionId;
+    };
+
+    // Use ref to keep sessionId stable
+    const sessionIdRef = useRef(getSessionId());
+
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     };
@@ -30,14 +43,16 @@ const ChatWidget = () => {
         setIsLoading(true);
 
         try {
-            // Sending POST request to n8n webhook
-            // Expecting the webhook to handle { message: "text" }
+            // Sending POST request to n8n webhook with SESSION ID
             const response = await fetch(WEBHOOK_URL, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ message: userMsg }),
+                body: JSON.stringify({
+                    message: userMsg,
+                    sessionId: sessionIdRef.current
+                }),
             });
 
             if (!response.ok) throw new Error('Network response was not ok');
@@ -109,8 +124,8 @@ const ChatWidget = () => {
                                 >
                                     <div
                                         className={`max-w-[80%] p-3 rounded-lg text-sm leading-relaxed ${msg.type === 'user'
-                                                ? 'bg-guerra-red text-white rounded-br-none'
-                                                : 'bg-slate-800 text-slate-200 rounded-bl-none border border-slate-700'
+                                            ? 'bg-guerra-red text-white rounded-br-none'
+                                            : 'bg-slate-800 text-slate-200 rounded-bl-none border border-slate-700'
                                             }`}
                                     >
                                         {msg.text}
